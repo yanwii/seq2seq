@@ -36,7 +36,7 @@ Requirements:
         # 重新训练
         python3 seq2seq.py retrain
 
-### 以下是k=5时的结果
+### 以下是k=5时的结果, 越接近1，结果越好
 
         me > 我是谁
         drop [3, 1], 1
