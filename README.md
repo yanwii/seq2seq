@@ -5,7 +5,7 @@ Pytorch 厉害了！
 ---
 Requirements:   
 [**Python3**](https://www.python.org/)  
-[**Pytorch**](https://github.com/pytorch/pytorch)   
+[**Pytorch-0.1.11**](https://github.com/pytorch/pytorch)   
 [**Jieba分词**](https://github.com/fxsjy/jieba)
 
 ---
