@@ -12,16 +12,16 @@ Requirements:
 
 ### Pytorch 安装
         python2.7
-        pip install http://download.pytorch.org/whl/cu80/torch-0.1.11.post5-cp27-none-linux_x86_64.whl
-        pip install torchvision
+        pip2 install http://download.pytorch.org/whl/cu80/torch-0.1.11.post5-cp27-none-linux_x86_64.whl
+        pip2 install torchvision
         
         python3.5
-        pip install http://download.pytorch.org/whl/cu80/torch-0.1.11.post5-cp35-cp35m-linux_x86_64.whl
-        pip install torchvision
+        pip3 install http://download.pytorch.org/whl/cu80/torch-0.1.11.post5-cp35-cp35m-linux_x86_64.whl
+        pip3 install torchvision
         
         python3.6
-        pip install http://download.pytorch.org/whl/cu80/torch-0.1.11.post5-cp36-cp36m-linux_x86_64.whl
-        pip install torchvision
+        pip3 install http://download.pytorch.org/whl/cu80/torch-0.1.11.post5-cp36-cp36m-linux_x86_64.whl
+        pip3 install torchvision
 
 ---
 
