@@ -68,17 +68,12 @@ class Attn(nn.Module):
     
     def score(self, hidden, encoder_output):
         if self.method == 'dot':
-            energy = hidden.dot(encoder_output)
+            energy = torch.dot(hidden.view(-1), encoder_output.view(-1))
             return energy
         
         elif self.method == 'general':
             energy = self.attn(encoder_output)
-            energy = hidden.dot(energy)
-            return energy
-        
-        elif self.method == 'concat':
-            energy = self.attn(torch.cat((hidden, encoder_output), 1))
-            energy = self.other.dot(energy)
+            energy = torch.dot(hidden.view(-1), encoder_output.view(-1))
             return energy
 
 class AttnDecoderRNN(nn.Module):
@@ -123,8 +118,8 @@ class seq2seq(nn.Module):
         self.batch_index = 0
         self.GO_token = 2
         self.EOS_token = 1
-        self.input_size = 600
-        self.output_size = 1600
+        self.input_size = 7
+        self.output_size = 9
         self.hidden_size = 100
         self.max_length = 15
         self.show_epoch = 100
