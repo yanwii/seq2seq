@@ -21,14 +21,14 @@ EOS_token = 1
 class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size, n_layers=1):
         super(EncoderRNN, self).__init__()
-        
+
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.n_layers = n_layers
-        
+
         self.embedding = nn.Embedding(input_size, hidden_size)
         self.gru = nn.GRU(hidden_size, hidden_size, n_layers)
-        
+
     def forward(self, word_inputs, hidden):
         seq_len = len(word_inputs)
         embedded = self.embedding(word_inputs).view(seq_len, 1, -1)
@@ -44,10 +44,10 @@ class EncoderRNN(nn.Module):
 class Attn(nn.Module):
     def __init__(self, method, hidden_size, max_length):
         super(Attn, self).__init__()
-        
+
         self.method = method
         self.hidden_size = hidden_size
-        
+
         if self.method == 'general':
             self.attn = nn.Linear(self.hidden_size, hidden_size)
 
@@ -65,12 +65,12 @@ class Attn(nn.Module):
             attn_energies[i] = self.score(hidden, encoder_outputs[i])
 
         return F.softmax(attn_energies).unsqueeze(0).unsqueeze(0)
-    
+
     def score(self, hidden, encoder_output):
         if self.method == 'dot':
             energy = torch.dot(hidden.view(-1), encoder_output.view(-1))
             return energy
-        
+
         elif self.method == 'general':
             energy = self.attn(encoder_output)
             energy = torch.dot(hidden.view(-1), encoder_output.view(-1))
@@ -79,31 +79,31 @@ class Attn(nn.Module):
 class AttnDecoderRNN(nn.Module):
     def __init__(self, attn_model, hidden_size, output_size, n_layers=1, dropout_p=0.1, max_length=10):
         super(AttnDecoderRNN, self).__init__()
-        
+
         self.attn_model = attn_model
         self.hidden_size = hidden_size
         self.output_size = output_size
         self.n_layers = n_layers
         self.dropout_p = dropout_p
         self.max_length = max_length
-        
+
         self.embedding = nn.Embedding(output_size, hidden_size)
         self.gru = nn.GRU(hidden_size * 2, hidden_size, n_layers, dropout=dropout_p)
         self.out = nn.Linear(hidden_size * 2, output_size)
-        
+
         if attn_model != 'none':
             self.attn = Attn(attn_model, hidden_size, self.max_length)
-    
+
     def forward(self, word_input, last_context, last_hidden, encoder_outputs):
-        
+
         word_embedded = self.embedding(word_input).view(1, 1, -1) # S=1 x B x N
-        
+
         rnn_input = torch.cat((word_embedded, last_context.unsqueeze(0)), 2)
         rnn_output, hidden = self.gru(rnn_input, last_hidden)
 
         attn_weights = self.attn(rnn_output.squeeze(0), encoder_outputs)
         context = attn_weights.bmm(encoder_outputs.transpose(0, 1)) # B x 1 x N
-        
+
         rnn_output = rnn_output.squeeze(0) # S=1 x B x N -> B x N
         context = context.squeeze(1)       # B x S=1 x N -> B x N
         output = F.log_softmax(self.out(torch.cat((rnn_output, context), 1)))
@@ -199,6 +199,7 @@ class seq2seq(nn.Module):
         try:
             self.load_state_dict(torch.load(self.model_path+'params.pkl'))
         except Exception as e:
+            print(e)
             print("No model!")
         loss_track = []
 
@@ -247,7 +248,7 @@ class seq2seq(nn.Module):
             for di in range(target_length):
                 decoder_output, decoder_context, decoder_hidden, decoder_attention = self.decoder(decoder_input, decoder_context, decoder_hidden, encoder_outputs)
                 loss += self.criterion(decoder_output[0], target_variable[di])
-                decoder_input = target_variable[di] 
+                decoder_input = target_variable[di]
                 decoder_outputs.append(decoder_output.unsqueeze(0))
         else:
             for di in range(target_length):
@@ -257,7 +258,7 @@ class seq2seq(nn.Module):
                 topv, topi = decoder_output.data.topk(1)
                 ni = topi[0][0]
 
-                decoder_input = Variable(torch.LongTensor([[ni]])) 
+                decoder_input = Variable(torch.LongTensor([[ni]]))
                 if USE_CUDA: decoder_input = decoder_input.cuda()
                 if ni == EOS_token: break
         loss.backward()
@@ -267,7 +268,7 @@ class seq2seq(nn.Module):
         self.decoder_optimizer.step()
         decoder_outputs = torch.cat(decoder_outputs, 0)
         return loss.data[0] / target_length, decoder_outputs
-    
+
     def make_infer_fd(self, input_vec):
         inputs = []
         enc = input_vec[:self.max_length] if len(input_vec) > self.max_length else input_vec
@@ -281,6 +282,7 @@ class seq2seq(nn.Module):
         try:
             self.load_state_dict(torch.load(self.model_path+'params.pkl'))
         except Exception as e:
+            print(e)
             print("No model!")
         loss_track = []
 
@@ -351,7 +353,7 @@ class seq2seq(nn.Module):
 
     def tensorToList(self, tensor):
         return tensor.cpu().data.numpy().tolist()[0]
-    
+
     def beamSearchDecoder(self, input_variable):
         input_length = input_variable.size()[0]
         encoder_hidden = self.encoder.init_hidden()
@@ -363,7 +365,7 @@ class seq2seq(nn.Module):
         if USE_CUDA:
             decoder_input = decoder_input.cuda()
             decoder_context = decoder_context.cuda()
-        
+
         decoder_output, decoder_context, decoder_hidden, decoder_attention = self.decoder(decoder_input, decoder_context, decoder_hidden, encoder_outputs)
         topk = decoder_output.data.topk(self.top_k)
         samples = [[] for i in range(self.top_k)]
@@ -379,7 +381,7 @@ class seq2seq(nn.Module):
             for index in range(len(samples)):
                 tmp.extend(self.beamSearchInfer(samples[index], index))
             samples = []
-            
+
             # 筛选出topk
             df = pd.DataFrame(tmp)
             df.columns = ['sequence', 'pre_socres', 'fin_scores', "ave_scores", "decoder_context", "decoder_hidden", "decoder_attention", "encoder_outputs"]
@@ -397,7 +399,7 @@ class seq2seq(nn.Module):
             samples = df.values.tolist()
             if len(samples) == 0:
                 break
-            
+
         if len(final_samples) < self.top_k:
             final_samples.extend(samples[:(self.top_k-dead_k)])
         return final_samples
@@ -406,7 +408,7 @@ class seq2seq(nn.Module):
         samples = []
         decoder_input = Variable(torch.LongTensor([[sample[0][-1]]]))
         if USE_CUDA:
-            decoder_input = decoder_input.cuda() 
+            decoder_input = decoder_input.cuda()
         sequence, pre_scores, fin_scores, ave_scores, decoder_context, decoder_hidden, decoder_attention, encoder_outputs = sample
         decoder_output, decoder_context, decoder_hidden, decoder_attention = self.decoder(decoder_input, decoder_context, decoder_hidden, encoder_outputs)
 
