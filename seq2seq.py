@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 import math
 import os
 import random
@@ -118,8 +119,8 @@ class seq2seq(nn.Module):
         self.batch_index = 0
         self.GO_token = 2
         self.EOS_token = 1
-        self.input_size = 7
-        self.output_size = 9
+        self.input_size = 14
+        self.output_size = 15
         self.hidden_size = 100
         self.max_length = 15
         self.show_epoch = 100
@@ -247,13 +248,13 @@ class seq2seq(nn.Module):
         if use_teacher_forcing:
             for di in range(target_length):
                 decoder_output, decoder_context, decoder_hidden, decoder_attention = self.decoder(decoder_input, decoder_context, decoder_hidden, encoder_outputs)
-                loss += self.criterion(decoder_output[0], target_variable[di])
+                loss += self.criterion(decoder_output, target_variable[di])
                 decoder_input = target_variable[di]
                 decoder_outputs.append(decoder_output.unsqueeze(0))
         else:
             for di in range(target_length):
                 decoder_output, decoder_context, decoder_hidden, decoder_attention = self.decoder(decoder_input, decoder_context, decoder_hidden, encoder_outputs)
-                loss += self.criterion(decoder_output[0], target_variable[di])
+                loss += self.criterion(decoder_output, target_variable[di])
                 decoder_outputs.append(decoder_output.unsqueeze(0))
                 topv, topi = decoder_output.data.topk(1)
                 ni = topi[0][0]
