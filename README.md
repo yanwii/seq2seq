@@ -65,3 +65,11 @@ Requirements:
         ai >  我是你 0.0647218796512
         ai >  关你屁事 -0.311924366579
 
+---
+
+### Status
+#### 2017-09-23 Update
+
+        修复
+        ValueError: Expected 2 or 4 dimensions (got 1)
+ 
